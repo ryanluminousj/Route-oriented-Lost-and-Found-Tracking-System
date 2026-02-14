@@ -18,13 +18,11 @@ export function Login() {
       return;
     }
 
-    // Simple validation for demo
     if (email.length < 3) {
       setError('Email is invalid');
       return;
     }
 
-    // Mock login
     login({ name: email.split('@')[0], email });
     navigate('/');
   }

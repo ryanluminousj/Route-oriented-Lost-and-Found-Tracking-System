@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, Upload } from 'lucide-react';
 
 export function ReportItem({ routes, onSubmit, onCancel }) {
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     routeId: routes[0]?.id || '',
     type: 'lost',
     category: 'Other',
@@ -16,7 +16,7 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
 
   const [imagePreview, setImagePreview] = useState('');
   const [imageFile, setImageFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const categories = [
     'Electronics',
@@ -27,77 +27,63 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
     'Other'
   ];
 
-  const selectedRoute = routes.find(r => r.id === formData.routeId);
-
-  // Show toast-like message (using alert as fallback)
-  const showError = (message) => {
-    alert(message);
-  };
+  const selectedRoute = routes.find(r => r.id === form.routeId);
 
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        showError('Image size must be less than 5MB');
-        return;
-      }
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result;
-        setImagePreview(result);
-        setImageFile({
-          base64: result,
-          fileName: file.name
-        });
-      };
-      reader.readAsDataURL(file);
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be less than 5MB');
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+      setImageFile({
+        base64: reader.result,
+        fileName: file.name
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const removeImage = () => {
     setImagePreview('');
     setImageFile(null);
-    setFormData({ ...formData, imageUrl: '' });
+    setForm({ ...form, imageUrl: '' });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate: found items must have an image
-    if (formData.type === 'found' && !imageFile) {
-      showError('Please upload an image of the found item');
+    if (form.type === 'found' && !imageFile) {
+      alert('Please upload an image of the found item');
       return;
     }
 
     try {
-      setIsUploading(true);
-
-      // Use the base64 data URL directly (no upload needed)
-      const imageUrl = imageFile ? imageFile.base64 : '';
-
-      // Submit the form
+      setLoading(true);
       onSubmit({
-        ...formData,
-        imageUrl: imageUrl,
+        ...form,
+        imageUrl: imageFile?.base64 || '',
         status: 'open'
       });
-
-      setIsUploading(false);
+      setLoading(false);
     } catch (error) {
       console.error('Error submitting form:', error);
-      showError('Failed to submit form. Please try again.');
-      setIsUploading(false);
+      alert('Failed to submit form. Please try again.');
+      setLoading(false);
     }
   };
 
-  const isFormValid = formData.description &&
-    formData.location &&
-    formData.reportedBy &&
-    formData.contactEmail &&
-    (formData.type === 'lost' || imageFile) &&
-    !isUploading;
+  const canSubmit = form.description &&
+    form.location &&
+    form.reportedBy &&
+    form.contactEmail &&
+    (form.type === 'lost' || imageFile) &&
+    !loading;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -113,17 +99,14 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Type Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Type *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Type *</label>
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, type: 'lost' })}
+                onClick={() => setForm({ ...form, type: 'lost' })}
                 className={`p-4 border-2 rounded-lg font-medium transition-colors ${
-                  formData.type === 'lost'
+                  form.type === 'lost'
                     ? 'border-red-500 bg-red-50 text-red-700'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
@@ -133,9 +116,9 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
               </button>
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, type: 'found' })}
+                onClick={() => setForm({ ...form, type: 'found' })}
                 className={`p-4 border-2 rounded-lg font-medium transition-colors ${
-                  formData.type === 'found'
+                  form.type === 'found'
                     ? 'border-green-500 bg-green-50 text-green-700'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
@@ -146,14 +129,11 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
             </div>
           </div>
 
-          {/* Route Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Route *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Route *</label>
             <select
-              value={formData.routeId}
-              onChange={(e) => setFormData({ ...formData, routeId: e.target.value, location: '' })}
+              value={form.routeId}
+              onChange={(e) => setForm({ ...form, routeId: e.target.value, location: '' })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             >
@@ -165,14 +145,11 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
             </select>
           </div>
 
-          {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
             <select
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             >
@@ -184,14 +161,11 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
             </select>
           </div>
 
-          {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
             <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
               rows={3}
               placeholder="Detailed description of the item..."
@@ -199,34 +173,28 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
             />
           </div>
 
-          {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Photo {formData.type === 'found' ? '*' : '(Optional)'}
+              Photo {form.type === 'found' ? '*' : '(Optional)'}
             </label>
-            {formData.type === 'found' && (
+            {form.type === 'found' && (
               <p className="text-sm text-amber-600 mb-2">
-                ⚠️ Photo of the found item is mandatory (to assist the owner)
+                ⚠️ Photo is required for found items
               </p>
             )}
-
             {!imagePreview ? (
               <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                 <div className="flex flex-col items-center justify-center py-6">
                   <Upload className="w-10 h-10 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600 font-medium">
-                    Click to upload photo
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    PNG, JPG (up to 10 MB)
-                  </p>
+                  <p className="text-sm text-gray-600 font-medium">Click to upload</p>
+                  <p className="text-xs text-gray-500 mt-1">PNG, JPG (max 5MB)</p>
                 </div>
                 <input
                   type="file"
                   className="hidden"
                   accept="image/*"
                   onChange={handleImageUpload}
-                  required={formData.type === 'found'}
+                  required={form.type === 'found'}
                 />
               </label>
             ) : (
@@ -239,7 +207,7 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -247,14 +215,11 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
             )}
           </div>
 
-          {/* Location */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Location (Stop) *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Location (Stop) *</label>
             <select
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              value={form.location}
+              onChange={(e) => setForm({ ...form, location: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
               required
             >
@@ -267,43 +232,35 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
             </select>
           </div>
 
-          {/* Date */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
             <input
               type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
           </div>
 
-          {/* Reporter Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reported By *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Your Name *</label>
               <input
                 type="text"
-                value={formData.reportedBy}
-                onChange={(e) => setFormData({ ...formData, reportedBy: e.target.value })}
+                value={form.reportedBy}
+                onChange={(e) => setForm({ ...form, reportedBy: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="Your name or ID"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Contact Email *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
               <input
                 type="email"
-                value={formData.contactEmail}
-                onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                value={form.contactEmail}
+                onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="email@example.com"
                 required
@@ -311,14 +268,13 @@ export function ReportItem({ routes, onSubmit, onCancel }) {
             </div>
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-3 pt-4">
             <button
               type="submit"
-              disabled={!isFormValid}
+              disabled={!canSubmit}
               className="flex-1 bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
             >
-              {isUploading ? 'Uploading...' : 'Submit Report'}
+              {loading ? 'Uploading...' : 'Submit Report'}
             </button>
             <button
               type="button"

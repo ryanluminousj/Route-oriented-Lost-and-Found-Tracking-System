@@ -30,7 +30,6 @@ export function Signup() {
       return;
     }
 
-    // Mock signup
     signup({ name, email });
     navigate('/');
   }

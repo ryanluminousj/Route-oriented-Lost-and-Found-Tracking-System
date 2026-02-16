@@ -147,8 +147,12 @@ function DashboardPage({ user, logout, items, onUpdateItemStatus, onDeleteItem }
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-sky-800 ">Route Tracker</h1>
-              <p className="text-sm text-sky-600">Lost & Found System</p>
+              <Link to="/" className="block">
+                <h1 className="text-2xl font-bold text-sky-800 hover:text-sky-900 transition">
+                  Route Tracker
+                </h1>
+                <p className="text-sm text-sky-600">Lost & Found Tracking System</p>
+              </Link>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-emerald text-sm">
@@ -226,8 +230,12 @@ function ReportItemPage({ user, logout, onAddItem }) {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-sky-800">Route Tracker</h1>
-              <p className="text-sm text-sky-600">Lost & Found System</p>
+              <Link to="/" className="block">
+                <h1 className="text-2xl font-bold text-sky-800 hover:text-sky-900 transition">
+                  Route Tracker
+                </h1>
+                <p className="text-sm text-sky-600">Lost & Found System</p>
+              </Link>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sky-700 text-sm">

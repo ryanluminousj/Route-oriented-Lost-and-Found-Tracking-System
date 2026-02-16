@@ -69,19 +69,6 @@ function AuthenticatedRoutes() {
       reportedBy: 'Sunita Gurung',
       contactEmail: 'sunita.gurung@email.com',
       imageUrl: 'https://images.unsplash.com/photo-1627123424574-724758594e93?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHx3YWxsZXR8ZW58MXx8fHwxNzY4NzMxNTA4fDA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    {
-      id: '5',
-      routeId: '3',
-      type: 'found',
-      category: 'Personal Items',
-      description: 'Blue backpack with books and laptop',
-      location: 'Thapathali',
-      date: '2026-01-17',
-      status: 'open',
-      reportedBy: 'Bus Helper',
-      contactEmail: 'helper@busservice.com',
-      imageUrl: 'https://images.unsplash.com/photo-1583297957675-5fad4194f588?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxibHVlJTIwYmFja3BhY2t8ZW58MXx8fHwxNzY4NzMxNTA5fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
     }
   ]);
 
